@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using Utilities;
@@ -17,7 +18,7 @@ namespace Lab2
         // Group made.
         static void Main()
         {
-            Graph g = new Graph(16, 20);
+            Graph g = new Graph(5, 30);
             Console.WriteLine("The graph:");
             g.Print();
             List<Edge> result = MSTKruskal(g);
@@ -27,6 +28,21 @@ namespace Lab2
             {
                 Console.WriteLine(edge);
             }
+            List<Edge> result2 = MSTPrimPQFSCG2ElectricPrimalo(g);
+            Console.WriteLine();
+            Console.WriteLine("MSTPrim2:");
+            foreach (Edge edge in result2)
+            {
+                Console.WriteLine(edge);
+            }
+            List<Edge> result3 = MSTPrimPQHeap2ElectricPrimalo(g);
+            Console.WriteLine();
+            Console.WriteLine("MSTPrim2:");
+            foreach (Edge edge in result3)
+            {
+                Console.WriteLine(edge);
+            }
+            //Verify(result, result2);
         }
 
         // Group made.
@@ -58,118 +74,140 @@ namespace Lab2
         /// </summary>
         /// <param name="graph">the graph.</param>
         /// <returns>A MST.</returns>
-        public static List<Edge> MSTPrimPQFSCG(Graph graph)
+        //public static List<Edge> MSTPrimPQFSCG(Graph graph)
+        //{
+        //    return MSTPrim(graph, new PriorityQueueFromSystemCollectionsGeneric<int, double>());
+        //}
+        public static List<Edge> MSTPrimPQFSCG2ElectricPrimalo(Graph graph)
         {
-            return MSTPrim(graph, new PriorityQueueFromSystemCollectionsGeneric<int, double>());
+            return MSTPrim2ElectricPrimalo(graph, new PriorityQueueFromSystemCollectionsGeneric<int, double>());
         }
 
-        private static List<Edge> MSTPrim2Primier(Graph graph, IPriorityQueue<int, double> pq)
+        public static List<Edge> MSTPrimPQHeap2ElectricPrimalo(Graph graph)
         {
-            int[] previous = new int[graph.Nodes.Count];
-            previous[0] = -1;
-            int[] minLength = new int[graph.Nodes.Count];
-            Array.Fill(minLength, int.MaxValue);
-            minLength[0] = 0;
+            return MSTPrim2ElectricPrimalo(graph, new PriorityQueueHeap<int, double>());
+        }
+        private static List<Edge> MSTPrim2ElectricPrimalo(Graph graph, IPriorityQueue<int, double> pq)
+        {
             bool[] isInMST = new bool[graph.Nodes.Count];
             Array.Fill(isInMST, false);
             List<Edge> result = [];
             List<Edge> knownEdges = [];
-            knownEdges.Add();
             int current = 0;
-            isInMST[0] = true;
-            for (int i = 0; i < graph.Nodes.Count - 1; i++)
+            while (result.Count < graph.Nodes.Count -1)
             {
-                if (isInMST[knownEdges[current].End] == false)
+                if (knownEdges.Count == 0)
                 {
-                    previous[i] = graph.Nodes[knownEdges[current].End].Id;
+                    isInMST[current] = true;
+                    foreach (Edge edge in graph.Nodes[current].Edges)
+                    {
+                        knownEdges.Add(edge);
+                        pq.Enqueue(knownEdges.Count - 1, edge.Length);
+
+                    }
+                    if (pq.IsEmpty)
+                    {
+                        Console.WriteLine("Prim: Kön är tom, komplett lista kunde inte skapas");
+                        break;
+                    }
+                    current = pq.Dequeue();
+                    result.Add(knownEdges[current]);
                     isInMST[knownEdges[current].End] = true;
                     foreach (Edge edge in graph.Nodes[knownEdges[current].End].Edges)
                     {
                         knownEdges.Add(edge);
-                        pq.Enqueue(knownEdges.Count, edge.Length);
+                        pq.Enqueue(knownEdges.Count - 1, edge.Length);
 
+                    }
+                    if (pq.IsEmpty)
+                    {
+                        Console.WriteLine("Prim: Kön är tom, komplett lista kunde inte skapas");
+                        break;
                     }
                     current = pq.Dequeue();
-                    if (isInMST[knownEdges[current].End] == false)
-                    {
-                        result.Add(knownEdges[current]);
-                    }
-                    else
-                    {
-
-                    }
                 }
-            }
-
-
-
-
-            return null;
-        }
-
-        //static int GetMinLengthIndex(int[] lengths, bool[] isInMST, int nodes)
-        //{
-        //    int minValue = int.MaxValue;
-        //    int minIndex = 0;
-        //    for (int i =0; i < )
-        }
-        private static List<Edge> MSTPrim(Graph graph, IPriorityQueue<int, double> pq)
-        {
-            int[] previous = new int[graph.Nodes.Count];
-            previous[0] = -1;
-            int[] minLength = new int[graph.Nodes.Count];
-            Array.Fill(minLength, int.MaxValue);
-            minLength[0] = 0;
-            bool[] isInMST = new bool[graph.Nodes.Count];
-            Array.Fill(isInMST, false);
-            int current = 0;
-            List<Edge> result = [];
-            for (int i = 0; i < graph.Nodes.Count - 1; i++)
-            {
-                if (isInMST[current] == false)
+                else if (isInMST[knownEdges[current].End] == false)
                 {
-
-                    int nodeFrom = 0;
-                    previous[i] = graph.Nodes[current].Id;
-                    isInMST[current] = true;
-                    foreach (Edge edge in graph.Nodes[current].Edges)
+                    result.Add(knownEdges[current]);
+                    isInMST[knownEdges[current].End] = true;
+                    foreach (Edge edge in graph.Nodes[knownEdges[current].End].Edges)
                     {
-                        pq.Enqueue(edge.End, edge.Length);
+                        knownEdges.Add(edge);
+                        pq.Enqueue(knownEdges.Count - 1, edge.Length);
+
                     }
-
-                    nodeFrom = current;
-                    current = pq.Dequeue();
-                    int[,] edgeCase = [nodeFrom, current]
-
-                }
-                else if (pq.IsEmpty == true)
-                {
-                    Console.WriteLine("Queue is empty, all nodes could not be connected");
-                    break;
+                    {
+                        if (pq.IsEmpty)
+                        {
+                            Console.WriteLine("Prim: Kön är tom, komplett lista kunde inte skapas");
+                            break;
+                        }
+                        current = pq.Dequeue();
+                    }
                 }
                 else
                 {
+                    if (pq.IsEmpty)
+                    {
+                        Console.WriteLine("Prim: Kön är tom, komplett lista kunde inte skapas");
+                        break;
+                    }
                     current = pq.Dequeue();
-                    i--;
                 }
             }
-
-            for (int i = 1; i < graph.Nodes.Count; i++)
-            {
-                result.Add(graph.Nodes.Edges)
-            }
-            //for (int i = 0; i < graph.Nodes.Count -1; i++)
-            //{
-            //    int minimumLengthIndex = pq
-            //}
-            return null;
+            return result;
         }
+        private static List<Edge> MSTPrim(Graph graph, IPriorityQueue<int, double> pq)
+        {
+            int[] nodeFrom = new int[graph.Nodes.Count];
+            nodeFrom[0] = -1;
+            int[] nodeTo = new int[graph.Nodes.Count];
+            double[] minLength = new double[graph.Nodes.Count];
+            Array.Fill(minLength, int.MaxValue);
+            bool[] isInMST = new bool[graph.Nodes.Count];
+            Array.Fill(isInMST, false);
+            List<Edge> result = [];
+            int current = 0;
+            for (int i = 0; i < graph.Nodes.Count; i++)
+            {
+                Console.WriteLine("Node not in MST " + i);
+                isInMST[current] = true;
+                nodeFrom[i] = current;
+                foreach (Edge edge in graph.Nodes[current].Edges)
+                {
+                    if (isInMST[edge.End] == false && edge.Length < minLength[edge.End])
+                    {
 
-        /// <summary>
-        ///  Computes a MST between the nodes using Kruskal's algorithm.
-        /// </summary>
-        /// <param name="graph">the graph.</param>
-        /// <returns>A MST.</returns>
+                        minLength[edge.End] = edge.Length;
+                        pq.Enqueue(edge.End, edge.Length);
+                    }
+                }
+                if (pq.IsEmpty)
+                {
+                    Console.WriteLine("Prim: Queue is empty");
+                    break;
+                }
+                current = pq.Dequeue();
+                while (isInMST[current] == true && pq.IsEmpty == false)
+                {
+                    current = pq.Dequeue();
+                }
+                nodeTo[i] = current;
+
+            }
+            for (int i = 0; i < nodeTo.Length - 1; i++)
+            {
+                foreach (Edge e in graph.Nodes[nodeTo[i]].Edges)
+                {
+                    if (e.Length == minLength[e.Start])
+                    {
+                        result.Add(e);
+                    }
+                }
+            }
+            Console.WriteLine();
+            return result;
+        }
         public static List<Edge> MSTKruskal(Graph graph)
         {
             List<Edge> edges = graph.Edges;
@@ -257,6 +295,10 @@ namespace Lab2
             {
                 string str = $"the MST's do not have the same length: {lengthA} != {lengthB}.";
                 throw new ArgumentException(str);
+            }
+            else
+            {
+                Console.WriteLine("Wow, grymt, de matchar!");
             }
         }
 
