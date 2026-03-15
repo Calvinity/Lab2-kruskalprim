@@ -24,8 +24,8 @@ namespace Lab2
         // Group made.
         static void Main()
         {
-            int[] nodesArray = { 500, 1000, 2500, 5000 };
-            int[] edgeArray = { 40, 50, 60, 75 };
+            int[] nodesArray = { 100, 500, 1000, 2500, 5000 };
+            int[] edgeArray = { 15, 40, 50, 60, 75 };
             string pathToResultFile = "..\\..\\..\\..\\Results\\Results.csv";
             if (File.Exists(pathToResultFile))
             {
@@ -205,32 +205,32 @@ namespace Lab2
             Array.Fill(isInMST, false);
             List<Edge> result = [];
             int current = 0;
-            for (int i = 0; i < graph.Nodes.Count; i++)
-            {
-                isInMST[current] = true;
-                nodeFrom[i] = current;
-                foreach (Edge edge in graph.Nodes[current].Edges)
+                for (int i = 0; i < graph.Nodes.Count; i++)
                 {
-                    if (isInMST[edge.End] == false && edge.Length < minLength[edge.End])
+                    isInMST[current] = true;
+                    nodeFrom[i] = current;
+                    foreach (Edge edge in graph.Nodes[current].Edges)
                     {
+                        if (isInMST[edge.End] == false && edge.Length < minLength[edge.End])
+                        {
 
-                        minLength[edge.End] = edge.Length;
-                        pq.Enqueue(edge.End, edge.Length);
+                            minLength[edge.End] = edge.Length;
+                            pq.Enqueue(edge.End, edge.Length);
+                        }
                     }
-                }
-                if (pq.IsEmpty)
-                {
-                    Console.WriteLine("Prim: Queue is empty");
-                    break;
-                }
-                current = pq.Dequeue();
-                while (isInMST[current] == true && pq.IsEmpty == false)
-                {
+                    if (pq.IsEmpty)
+                    {
+                        Console.WriteLine("Prim: Queue is empty");
+                        break;
+                    }
                     current = pq.Dequeue();
-                }
-                nodeTo[i] = current;
+                    while (isInMST[current] == true && pq.IsEmpty == false)
+                    {
+                        current = pq.Dequeue();
+                    }
+                    nodeTo[i] = current;
 
-            }
+                }
             for (int i = 0; i < nodeTo.Length - 1; i++)
             {
                 foreach (Edge e in graph.Nodes[nodeTo[i]].Edges)
