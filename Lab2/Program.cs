@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using Utilities;
+using System.Text;
 
 namespace Lab2
 {
@@ -13,60 +14,69 @@ namespace Lab2
 
         // Group made. This is one way you could create a list of algorithms and data-structures to test.
         private static KeyValuePair<string, Func<Graph, List<Edge>>>[] ALGORITHMS = {
+            new KeyValuePair<string, Func<Graph, List<Edge>>> ("Kruskals", MSTKruskal),
+            new KeyValuePair<string, Func<Graph, List<Edge>>> ("PrimPrio", MSTPrimPQFSCG),
+            new KeyValuePair<string, Func<Graph, List<Edge>>> ("PrimHeap", MSTPrimHeap),
+            new KeyValuePair<string, Func<Graph, List<Edge>>> ("PrimSD", MSTPrimSD),
+            new KeyValuePair<string, Func<Graph, List<Edge>>> ("PrimSL", MSTPrimSL)
         };
 
         // Group made.
         static void Main()
         {
-            Graph g = new Graph(5, 30);
-            Console.WriteLine("The graph:");
-            g.Print();
-            List<Edge> result = MSTKruskal(g);
-            Console.WriteLine();
-            Console.WriteLine("MSTKruskal:");
-            foreach (Edge edge in result)
+            int[] nodesArray = { 500, 1000, 2500, 5000 };
+            int[] edgeArray = { 40, 50, 60, 75 };
+            string pathToResultFile = "..\\..\\..\\..\\Results\\Results.csv";
+            if (File.Exists(pathToResultFile))
             {
-                Console.WriteLine(edge);
+                File.Delete(pathToResultFile);
             }
-            List<Edge> result2 = MSTPrimPQFSCG2ElectricPrimalo(g);
-            Console.WriteLine();
-            Console.WriteLine("MSTPrim2:");
-            foreach (Edge edge in result2)
-            {
-                Console.WriteLine(edge);
-            }
-            List<Edge> result3 = MSTPrimPQHeap2ElectricPrimalo(g);
-            Console.WriteLine();
-            Console.WriteLine("MSTPrim2:");
-            foreach (Edge edge in result3)
-            {
-                Console.WriteLine(edge);
-            }
+            StreamWriter output = new StreamWriter(pathToResultFile, false, new UTF8Encoding(false));
+            SeveralGraphsSeveralAlgorithms(nodesArray, edgeArray, output);
+            output.Close();
             //Verify(result, result2);
         }
 
         // Group made.
-        static void SeveralGraphsTwoAlgorithms(int[] nodesArray, int[] percentEdgesArray,
-                                               StreamWriter output, bool debug = false)
-        {
-        }
         // Group made. Or this way.
         static void SeveralGraphsSeveralAlgorithms(int[] nodesArray, int[] percentEdgesArray,
                                                    StreamWriter output, bool debug = false)
         {
-        }
-
-        // Group made.
-        static void OneGraphTwoAlgorithms(int nodes, int percentEdges,
-                                          StreamWriter output,
-                                          bool debug = false)
-        {
+            foreach (int node in nodesArray)
+            {
+                foreach (int percent in percentEdgesArray)
+                {
+                    OneGraphSeveralAlgorithms(node, percent, output);
+                }
+            }
+            // Kalla på onegrapSeveralAlgorithms, loopa igenom array av nodesArray och precent för att skapa grafer
+            // 
         }
         // Group made. Or this way.
         static void OneGraphSeveralAlgorithms(int nodes, int percentEdges,
                                               StreamWriter output,
                                               bool debug = false)
         {
+            Console.WriteLine("New Graph");
+            Graph graph = new Graph(nodes, percentEdges);
+            foreach (KeyValuePair<string, Func<Graph, List<Edge>>> algorithm in ALGORITHMS)
+            {
+                Console.WriteLine("Starting Loop");
+                ProcessUserTime cpuTime = new();
+                Stopwatch stopwatch = new Stopwatch();
+                cpuTime.Restart();
+                stopwatch.Start();
+                for (int i = 0; i < 5; i++)
+                {
+                    List<Edge> result = algorithm.Value(graph);
+                }
+                cpuTime.Stop();
+                stopwatch.Stop();
+                TimeSpan ts = stopwatch.Elapsed;
+                output.WriteLine($"{algorithm.Key};Nodes;{nodes};Edges;{percentEdges};CputTime;{cpuTime.ElapsedTotalSeconds};Stopwatch;{ts.TotalSeconds}");
+
+
+            }
         }
 
         /// <summary>
@@ -78,23 +88,50 @@ namespace Lab2
         //{
         //    return MSTPrim(graph, new PriorityQueueFromSystemCollectionsGeneric<int, double>());
         //}
-        public static List<Edge> MSTPrimPQFSCG2ElectricPrimalo(Graph graph)
+        public static List<Edge> MSTPrimPQFSCG(Graph graph)
         {
-            return MSTPrim2ElectricPrimalo(graph, new PriorityQueueFromSystemCollectionsGeneric<int, double>());
+            return MSTPrim(graph, new PriorityQueueFromSystemCollectionsGeneric<int, double>());
+        }
+        public static List<Edge> MSTPrim2PQFSCG(Graph graph)
+        {
+            return MSTPrim2(graph, new PriorityQueueFromSystemCollectionsGeneric<int, double>());
+        }
+        public static List<Edge> MSTPrimHeap(Graph graph)
+        {
+            return MSTPrim(graph, new PriorityQueueHeap<int, double>());
         }
 
-        public static List<Edge> MSTPrimPQHeap2ElectricPrimalo(Graph graph)
+        public static List<Edge> MSTPrim2Heap(Graph graph)
         {
-            return MSTPrim2ElectricPrimalo(graph, new PriorityQueueHeap<int, double>());
+            return MSTPrim2(graph, new PriorityQueueHeap<int, double>());
         }
-        private static List<Edge> MSTPrim2ElectricPrimalo(Graph graph, IPriorityQueue<int, double> pq)
+        public static List<Edge> MSTPrimSD(Graph graph)
+        {
+            return MSTPrim(graph, new PriorityQueueSortedDictionary<int, double>());
+        }
+        public static List<Edge> MSTPrim2SD(Graph graph)
+        {
+            return MSTPrim2(graph, new PriorityQueueSortedDictionary<int, double>());
+        }
+        public static List<Edge> MSTPrimSL(Graph graph)
+        {
+            return MSTPrim(graph, new PriorityQueueSortedList<int, double>());
+        }
+        public static List<Edge> MSTPrim2SL(Graph graph)
+        {
+            return MSTPrim2(graph, new PriorityQueueSortedList<int, double>());
+        }
+
+        //En version som använder en list men vi slutade använda den i testerna då den alltid
+        //var mellan dubbelt och 530 gånger långsammare, speciellt på SortedList versionen
+        private static List<Edge> MSTPrim2(Graph graph, IPriorityQueue<int, double> pq)
         {
             bool[] isInMST = new bool[graph.Nodes.Count];
             Array.Fill(isInMST, false);
             List<Edge> result = [];
             List<Edge> knownEdges = [];
             int current = 0;
-            while (result.Count < graph.Nodes.Count -1)
+            while (result.Count < graph.Nodes.Count - 1)
             {
                 if (knownEdges.Count == 0)
                 {
@@ -170,7 +207,6 @@ namespace Lab2
             int current = 0;
             for (int i = 0; i < graph.Nodes.Count; i++)
             {
-                Console.WriteLine("Node not in MST " + i);
                 isInMST[current] = true;
                 nodeFrom[i] = current;
                 foreach (Edge edge in graph.Nodes[current].Edges)
@@ -205,7 +241,6 @@ namespace Lab2
                     }
                 }
             }
-            Console.WriteLine();
             return result;
         }
         public static List<Edge> MSTKruskal(Graph graph)
