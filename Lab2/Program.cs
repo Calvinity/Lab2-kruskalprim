@@ -24,8 +24,8 @@ namespace Lab2
         // Group made.
         static void Main()
         {
-            int[] nodesArray = { 100, 500, 1000, 2500, 5000 };
-            int[] edgeArray = { 15, 40, 50, 60, 75 };
+            int[] nodesArray = { 100, 500, 1000, };
+            int[] edgeArray = { 15, 40, 75 };
             string pathToResultFile = "..\\..\\..\\..\\Results\\Results.csv";
             if (File.Exists(pathToResultFile))
             {
@@ -46,7 +46,10 @@ namespace Lab2
             {
                 foreach (int percent in percentEdgesArray)
                 {
-                    OneGraphSeveralAlgorithms(node, percent, output);
+                    for (int i = 0; i < 10; i++)
+                    {
+                        OneGraphSeveralAlgorithms(node, percent, output);
+                    }
                 }
             }
             // Kalla på onegrapSeveralAlgorithms, loopa igenom array av nodesArray och precent för att skapa grafer
